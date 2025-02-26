@@ -12,7 +12,7 @@ export default function NewResumePage() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/resume/new", {
+    const response = await fetch("/api/resume/get", { //src\app\api\resume\get\[id]\route.ts
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "My New Resume" }),

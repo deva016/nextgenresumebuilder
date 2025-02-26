@@ -1,10 +1,10 @@
-'use server';
+"use server";
 
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 
 export default async function createSupabaseServerClient() {
-  const cookieStore = cookies();
+  const cookieStore = cookies(); // ✅ This is valid inside a Server Component
 
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,13 +12,13 @@ export default async function createSupabaseServerClient() {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          return cookieStore.get(name)?.value || "";
         },
-        set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+        set(name: string, value: string, options) {
+          console.warn("⚠️ Use setCookie inside API routes instead.");
         },
-        remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options });
+        remove(name: string) {
+          console.warn("⚠️ Use deleteCookie inside API routes instead.");
         },
       },
     }

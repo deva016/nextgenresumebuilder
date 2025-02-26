@@ -9,7 +9,9 @@ export default function ResumeEditor({ resume }: { resume: any }) {
 
   useEffect(() => {
     async function fetchResume() {
-      const response = await fetch(`/api/resume/get/${resume.id}`);
+      const response = await fetch(`/api/resume/${resume.id}`, {
+        method: "GET",
+      });
       if (response.ok) {
         const data = await response.json();
         setTitle(data.title);
