@@ -14,19 +14,20 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  avatar    String?
-  resumes   Resume[]
+  id       String   @id @default(uuid())
+  email    String   @unique
+  name     String?
+  avatar   String?
+  resumes  Resume[]  // One user can have multiple resumes
 }
 
 model Resume {
-  id          String   @id @default(uuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  title       String
-  content     Json
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   Json
+  template  String   @default("default") // Ensure this is here
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 }

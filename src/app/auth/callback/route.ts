@@ -1,19 +1,34 @@
 import { NextResponse } from "next/server";
 import createSupabaseServerClient from "@/lib/supabase/server";
 
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
-  const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/";
-
-  if (code) {
+export async function GET(req: Request) {
+  try {
     const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
-  }
+    
+    // ✅ Exchange auth code for a session
+    const { data, error } = await supabase.auth.exchangeCodeForSession(
+      new URL(req.url).searchParams.get("code") || ""
+    );
 
-  // return the user to an error page with instructions
-  return NextResponse.redirect(`${origin}/auth/auth-code-error`);
+    if (error || !data?.session) {
+      console.error("Auth callback error:", error);
+      return NextResponse.redirect(new URL("/login", req.url)); // Redirect if authentication fails
+    }
+
+    const { access_token } = data.session;
+
+    // ✅ Set session cookie
+    const response = NextResponse.redirect(new URL("/dashboard", req.url));
+    response.cookies.set("session_token", access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    });
+
+    return response;
+  } catch (error) {
+    console.error("Auth callback unexpected error:", error);
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 }

@@ -1,33 +1,45 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import DefaultTemplate from "@/components/resumeTeme/DefaultTemplate";
+import ModernTemplate from "@/components/resumeTeme/ModernTemplate";
+import ClassicTemplate from "@/components/resumeTeme/ClassicTemplate";
+
+// ✅ Define the ResumeSection type
+type ResumeSection = {
+  id: string;
+  title: string;
+  content: string;
+};
 
 export default function ResumeEditor({ resume }: { resume: any }) {
-  const [title, setTitle] = useState(resume.title);
-  const [content, setContent] = useState(resume.content);
-  const [saving, setSaving] = useState(false);
+  const [template, setTemplate] = useState<string>(resume.template || "default");
+  const [sections, setSections] = useState<ResumeSection[]>(resume.content || []);
 
   useEffect(() => {
-    async function fetchResume() {
-      const response = await fetch(`/api/resume/${resume.id}`); // ✅ Correct API path
-      if (response.ok) {
-        const data = await response.json();
-        setTitle(data.title);
-        setContent(data.content);
-      } else {
-        console.error("Failed to fetch resume");
-      }
-    }
-    fetchResume();
-  }, [resume.id]);
+    const saveTemplate = async () => {
+      await fetch(`/api/resume/update/${resume.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template }),
+      });
+    };
+    saveTemplate();
+  }, [template]);
+
+  const handleContentChange = (id: string, newContent: string) => {
+    setSections((prevSections: ResumeSection[]) =>
+      prevSections.map((section: ResumeSection) =>
+        section.id === id ? { ...section, content: newContent } : section
+      )
+    );
+  };
 
   const handleSave = async () => {
-    setSaving(true);
-
     const response = await fetch(`/api/resume/update/${resume.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, content }),
+      body: JSON.stringify({ title: resume.title, content: sections, template }),
     });
 
     if (!response.ok) {
@@ -35,31 +47,44 @@ export default function ResumeEditor({ resume }: { resume: any }) {
     } else {
       alert("Resume saved successfully!");
     }
+  };
 
-    setSaving(false);
+  const getTemplateComponent = () => {
+    switch (template) {
+      case "modern":
+        return <ModernTemplate resume={{ ...resume, content: sections }} />;
+      case "classic":
+        return <ClassicTemplate resume={{ ...resume, content: sections }} />;
+      default:
+        return <DefaultTemplate resume={{ ...resume, content: sections }} />;
+    }
   };
 
   return (
-    <div>
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="border p-2 w-full mb-4"
-      />
+    <div className="container mx-auto p-6">
+      {/* Template Selection */}
+      <div className="mb-4">
+        <label className="block text-sm font-medium">Select Template</label>
+        <select
+          value={template}
+          onChange={(e) => setTemplate(e.target.value)}
+          className="border p-2 rounded-md"
+        >
+          <option value="default">Default</option>
+          <option value="modern">Modern</option>
+          <option value="classic">Classic</option>
+        </select>
+      </div>
 
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        className="border p-2 w-full h-40"
-      />
+      {/* Render Selected Template */}
+      {getTemplateComponent()}
 
+      {/* Save Resume Button */}
       <button
         onClick={handleSave}
-        className="bg-blue-500 text-white px-4 py-2 mt-4"
-        disabled={saving}
+        className="bg-blue-500 text-white px-4 py-2 mt-4 rounded-md"
       >
-        {saving ? "Saving..." : "Save Resume"}
+        Save Resume
       </button>
     </div>
   );
