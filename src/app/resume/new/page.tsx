@@ -1,3 +1,4 @@
+//src\app\resume\new\page.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
@@ -12,7 +13,7 @@ export default function NewResumePage() {
     setLoading(true);
     setError("");
 
-    const response = await fetch("/api/resume/get", { //src\app\api\resume\get\[id]\route.ts
+    const response = await fetch("/api/resume/new", { // ✅ Correct API route
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title: "My New Resume" }),
@@ -25,7 +26,7 @@ export default function NewResumePage() {
     }
 
     const resume = await response.json();
-    router.push(`/resume/${resume.id}`); // ✅ Redirects to the correct editor page
+      router.push(`/resume/${resume.id}`); // ✅ Redirects to Resume Editor
   };
 
   return (

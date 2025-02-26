@@ -9,13 +9,13 @@ export default function ResumeEditor({ resume }: { resume: any }) {
 
   useEffect(() => {
     async function fetchResume() {
-      const response = await fetch(`/api/resume/${resume.id}`, {
-        method: "GET",
-      });
+      const response = await fetch(`/api/resume/${resume.id}`); // ✅ Correct API path
       if (response.ok) {
         const data = await response.json();
         setTitle(data.title);
         setContent(data.content);
+      } else {
+        console.error("Failed to fetch resume");
       }
     }
     fetchResume();
