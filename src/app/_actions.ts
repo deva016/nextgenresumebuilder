@@ -11,21 +11,31 @@ export async function signUpWithEmailAndPassword({
   emailRedirectTo?: string;
 }) {
   const supabase = await createSupabaseServerClient();
-  const result = await supabase.auth.signUp({
+
+  const { data: user, error } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
-    options: {
-      emailRedirectTo,
-    },
+    options: { emailRedirectTo },
   });
-  return JSON.stringify(result);
+
+  if (error) {
+    return JSON.stringify({ error: error.message });
+  }
+
+  return JSON.stringify({ user });
 }
 
 export async function signInWithEmailAndPassword(data: LoginUserInput) {
   const supabase = await createSupabaseServerClient();
-  const result = await supabase.auth.signInWithPassword({
+
+  const { data: user, error } = await supabase.auth.signInWithPassword({
     email: data.email,
     password: data.password,
   });
-  return JSON.stringify(result);
+
+  if (error) {
+    return JSON.stringify({ error: error.message });
+  }
+
+  return JSON.stringify({ user });
 }
